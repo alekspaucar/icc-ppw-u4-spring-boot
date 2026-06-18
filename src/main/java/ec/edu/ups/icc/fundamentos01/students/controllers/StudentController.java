@@ -23,4 +23,10 @@ public class StudentController {
     public List<Student> getStudents() {
         return students;
     }
+
+    @GetMapping("/count")
+    public String getCount() {
+        return "Total Estudiantes: " + students.size();
+    }
+    
 }
