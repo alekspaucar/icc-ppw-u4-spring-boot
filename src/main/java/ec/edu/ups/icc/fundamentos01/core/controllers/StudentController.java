@@ -1,4 +1,4 @@
-package ec.edu.ups.icc.fundamentos01.students.controllers;
+package ec.edu.ups.icc.fundamentos01.core.controllers;
 
 import java.util.ArrayList;
 import java.util.List;
