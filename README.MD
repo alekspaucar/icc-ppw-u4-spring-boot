@@ -1,206 +1,349 @@
 # Programación y Plataformas Web
-## Frameworks Backend: Spring Boot – Práctica 1
+## Frameworks Backend: Spring Boot – Prácticas 1, 2 y 5
 
 **Estudiante:** Erick Paucar  
 **Correo:** alexpaucar.887@gmail.com  
 **Universidad Politécnica Salesiana – Cuenca**  
-**Fecha:** 18/06/2026
+**Fecha:** 20/06/2026
 
 ---
 
-# 1. Introducción
+# Práctica 1 y 2 – CRUD REST en memoria
 
-Spring Boot es un framework backend para Java que simplifica la creación de aplicaciones empresariales mediante configuración automática, servidor embebido y dependencias predefinidas. Forma parte del ecosistema Spring y permite construir APIs REST de forma rápida, organizada y escalable sin necesidad de configurar manualmente un servidor externo.
+## 1. Verificación del entorno
 
-En esta práctica se instaló el entorno, se ejecutó el servidor y se implementaron los primeros endpoints REST.
-
----
-
-# 2. Verificación del entorno
-
-## 2.1 Versión de Java
-
-Comando ejecutado:
 ```bash
 java -version
 ```
 
-**Captura:**
-
 ![Java Version](assets/java-version.png)
 
-Se verificó una versión compatible de Java (v25.0.2 LTS). Spring Boot requiere como mínimo Java 17.
-
 ---
 
-## 2.2 Estructura del proyecto
+## 2. Ejecución del servidor
 
-El proyecto fue generado con Spring Initializr usando Gradle como gestor de dependencias. La estructura generada es:
-
-```
-src/
-  └── main/
-       └── java/ec/edu/ups/icc/fundamentos01/
-            ├── Fundamentos01Application.java   ← Punto de entrada
-            ├── StatusController.java            ← Controlador de estado
-            └── students/
-                 ├── controllers/
-                 │    └── StudentController.java
-                 └── models/
-                      └── Student.java
-```
-
-| Archivo | Función |
-|---|---|
-| `Fundamentos01Application.java` | Clase principal que arranca la aplicación |
-| `StatusController.java` | Endpoint de verificación del servidor |
-| `StudentController.java` | Endpoints del dominio estudiantes |
-| `Student.java` | Modelo de datos del estudiante |
-| `build.gradle` | Dependencias del proyecto |
-| `gradlew` | Script para ejecutar Gradle sin instalación global |
-
----
-
-# 3. Ejecución del servidor
-
-Comando utilizado:
 ```bash
 ./gradlew bootRun
 ```
 
-**Captura:**
-
 ![Servidor](assets/servidor.png)
 
-Spring Boot inició correctamente con Tomcat embebido en el puerto **8080**. No se requiere instalar ni configurar un servidor externo — Spring Boot lo incluye automáticamente.
+Spring Boot inició con Tomcat embebido en el puerto **8080** con context path `/api`.
 
 ---
 
-# 4. Endpoints implementados
-
-## 4.1 Endpoint `/api/status`
-
-**Captura del controlador:**
+## 3. Endpoint `/api/status`
 
 ![Controlador Status](assets/status-controller.png)
 
-Código implementado en `StatusController.java`:
-
-```java
-@RestController
-@RequestMapping("/api/status")
-public class StatusController {
-
-    @GetMapping
-    public Map<String, String> getStatus() {
-        return Map.of(
-            "service", "Spring Boot API",
-            "status", "running",
-            "timestamp", Instant.now().toString()
-        );
-    }
-}
-```
-
-**Captura del endpoint funcionando:**
-
 ![Endpoint Status](assets/status-endpoint.png)
 
-Respuesta JSON en `http://localhost:8080/api/status`:
 ```json
 {
   "service": "Spring Boot API",
   "status": "running",
-  "timestamp": "2026-06-18T23:14:00.000Z"
+  "timestamp": "2026-06-20T14:53:57.904065"
 }
 ```
 
 ---
 
-## 4.2 Endpoint `/api/students`
+## 4. Endpoints de Products en Postman
 
-Código implementado en `StudentController.java`:
+### GET /api/products — 3 productos creados
+![GET products](assets/products-get-all.png)
+
+### GET /api/products/:id — producto existente
+![GET product by id](assets/products-get-one.png)
+
+### DELETE /api/products/:id — producto que no existe
+![DELETE product not found](assets/products-delete-not-found.png)
+
+---
+
+## 5. Explicación de anotaciones
+
+| Anotación | Función |
+|---|---|
+| `@RestController` | Controlador REST que retorna JSON directamente |
+| `@RequestMapping` | Define el prefijo de ruta de la clase |
+| `@GetMapping` | Maneja peticiones HTTP GET |
+| `@PostMapping` | Maneja peticiones HTTP POST |
+| `@PutMapping` | Maneja peticiones HTTP PUT |
+| `@PatchMapping` | Maneja peticiones HTTP PATCH |
+| `@DeleteMapping` | Maneja peticiones HTTP DELETE |
+| `@PathVariable` | Extrae un valor de la URL |
+| `@RequestBody` | Convierte el JSON del body al DTO |
+| `@Service` | Marca la clase como servicio inyectable |
+
+---
+
+# Práctica 5 – Persistencia real con PostgreSQL y JPA
+
+## 6. Introducción
+
+En las prácticas anteriores los datos se almacenaban en memoria con una lista:
 
 ```java
-@RestController
-@RequestMapping("/api/students")
-public class StudentController {
+private List<UserModel> users = new ArrayList<>();
+private Long currentId = 1L;
+```
 
-    private List<Student> students = new ArrayList<>();
+Esto tiene una limitación importante: **los datos se pierden al reiniciar la aplicación**.
 
-    public StudentController() {
-        students.add(new Student(id: 2, name: "Juan", age: "30"));
-        students.add(new Student(id: 1, name: "Diego", age: "10"));
+En esta práctica se reemplaza la lista por una base de datos real usando:
+- **PostgreSQL** — motor de base de datos
+- **Spring Data JPA** — capa de abstracción para persistencia
+- **Hibernate** — implementación de JPA
+- **Docker** — contenedor para levantar PostgreSQL
+
+---
+
+## 7. Flujo de datos con repositorios
+
+```
+Cliente
+  ↓
+Controller
+  ↓
+Service
+  ↓
+ServiceImpl
+  ↓
+Repository
+  ↓
+PostgreSQL
+  ↓
+Entity → Mapper → Model → ResponseDto
+  ↓
+Cliente
+```
+
+| Clase | Responsabilidad |
+|---|---|
+| `Controller` | Recibe peticiones HTTP |
+| `Service` | Define las operaciones disponibles |
+| `ServiceImpl` | Implementa la lógica usando el repositorio |
+| `Repository` | Ejecuta operaciones de persistencia |
+| `Entity` | Representa la tabla en PostgreSQL |
+| `Model` | Representa el objeto en la lógica de negocio |
+| `Mapper` | Convierte entre DTOs, modelos y entidades |
+
+---
+
+## 8. Configuración
+
+### 8.1 Dependencias en `build.gradle`
+
+```gradle
+implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+runtimeOnly 'org.postgresql:postgresql'
+```
+
+### 8.2 `application.yml`
+
+```yaml
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+spring:
+  application:
+    name: fundamentos01
+  datasource:
+    url: jdbc:postgresql://localhost:5432/devdb
+    username: ups
+    password: ups123
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+```
+
+`ddl-auto: update` permite que Hibernate cree o actualice las tablas automáticamente sin eliminar datos existentes.
+
+### 8.3 PostgreSQL con Docker
+
+```bash
+docker run --name postgres-dev \
+  -e POSTGRES_USER=ups \
+  -e POSTGRES_PASSWORD=ups123 \
+  -e POSTGRES_DB=devdb \
+  -p 5432:5432 \
+  -d postgres
+```
+
+| Parámetro | Valor |
+|---|---|
+| Host | localhost |
+| Puerto | 5432 |
+| Usuario | ups |
+| Contraseña | ups123 |
+| Base de datos | devdb |
+
+---
+
+## 9. BaseEntity — Superclase de auditoría
+
+```java
+@MappedSuperclass
+public abstract class BaseEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+    private boolean deleted;
+
+    @PrePersist
+    protected void onCreate() {
+        this.deleted = false;
+        this.createdAt = LocalDateTime.now();
     }
 
-    @GetMapping
-    public List<Student> getStudents() {
-        return students;
-    }
-
-    @GetMapping("/count")
-    public String getCount() {
-        return "Total Estudiantes: " + students.size();
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
     }
 }
 ```
 
-**Captura del endpoint `/api/students` en Postman:**
+| Anotación | Función |
+|---|---|
+| `@MappedSuperclass` | Los atributos se heredan a las entidades hijas sin crear tabla propia |
+| `@Id` | Marca el identificador principal |
+| `@GeneratedValue` | El ID lo genera automáticamente la base de datos |
+| `@PrePersist` | Ejecuta lógica antes de insertar un registro |
+| `@PreUpdate` | Ejecuta lógica antes de actualizar un registro |
 
-<!-- INSERTAR CAPTURA: Postman mostrando 200 OK con la lista de Juan y Diego -->
+Todas las entidades extienden `BaseEntity`, por lo que heredan automáticamente `id`, `createdAt`, `updatedAt` y `deleted`.
 
-![Endpoint Students](assets/students-endpoint.png)
+---
 
-Respuesta JSON en `http://localhost:8080/api/students`:
-```json
-[
-  { "id": 2, "name": "Juan", "age": "30" },
-  { "id": 1, "name": "Diego", "age": "10" }
-]
+## 10. ProductEntity
+
+```java
+@Entity
+@Table(name = "products")
+public class ProductEntity extends BaseEntity {
+
+    @Column(nullable = false, length = 150)
+    private String name;
+
+    @Column(nullable = false)
+    private Double price;
+
+    @Column(nullable = false)
+    private Integer stock;
+}
 ```
 
-**Captura del endpoint `/api/students/count`:**
-
-<!-- INSERTAR CAPTURA: Postman mostrando "Total Estudiantes: 2" -->
-
-![Endpoint Count](assets/students-count.png)
-
----
-
-# 5. Explicación de anotaciones
-
-### `@RestController`
-Indica que la clase es un controlador REST. Combina `@Controller` y `@ResponseBody`, lo que significa que todos los métodos retornan directamente datos JSON en lugar de vistas HTML.
-
-### `@RequestMapping`
-Define el prefijo de ruta para todos los endpoints de la clase. Por ejemplo, `@RequestMapping("/api/students")` hace que todos los métodos respondan bajo esa ruta base.
-
-### `@GetMapping`
-Mapea un método al método HTTP GET. Se puede combinar con una ruta adicional como `@GetMapping("/count")` para crear sub-rutas.
-
-### `@SpringBootApplication`
-Anotación principal que activa la configuración automática, el escaneo de componentes y la configuración de Spring Boot en la clase principal.
+| Anotación | Función |
+|---|---|
+| `@Entity` | Indica que la clase representa una tabla |
+| `@Table` | Define el nombre de la tabla en la BD |
+| `@Column` | Configura propiedades de la columna |
 
 ---
 
-# 6. Comparación con NestJS
+## 11. ProductRepository
 
-Ambos frameworks implementan el mismo patrón de arquitectura pero en lenguajes diferentes:
+```java
+@Repository
+public interface ProductRepository extends JpaRepository<ProductEntity, Long> {}
+```
 
-| Concepto | Spring Boot (Java) | NestJS (TypeScript) |
+`JpaRepository<ProductEntity, Long>` provee automáticamente:
+
+```java
+save(entity)       // insertar o actualizar
+findById(id)       // buscar por ID
+findAll()          // listar todos
+deleteById(id)     // eliminar por ID
+existsById(id)     // verificar si existe
+```
+
+Ya no se necesita lista en memoria ni `currentId` — el repositorio y PostgreSQL manejan todo.
+
+---
+
+## 12. Eliminación lógica (soft delete)
+
+En lugar de eliminar físicamente el registro, se marca como eliminado:
+
+```java
+@Override
+public void delete(Long id) {
+    ProductEntity entity = productRepository.findById(id)
+            .orElseThrow(() -> new IllegalStateException("Product not found"));
+    entity.setDeleted(true);   // ← marca como eliminado
+    productRepository.save(entity);  // ← guarda el cambio
+}
+```
+
+El registro permanece en la base de datos con `deleted = true`, lo que permite auditoría y recuperación futura.
+
+---
+
+## 13. Flujo de datos — ejemplo de create
+
+```
+POST /api/products
+  ↓
+CreateProductDto (name, price, stock)
+  ↓
+ProductMapper.toModelFromDTO() → ProductModel
+  ↓
+ProductMapper.toEntityFromModel() → ProductEntity
+  ↓
+productRepository.save() → PostgreSQL
+  ↓
+ProductMapper.toModelFromEntity() → ProductModel
+  ↓
+ProductMapper.toResponse() → ProductResponseDto
+  ↓
+Respuesta JSON al cliente
+```
+
+---
+
+## 14. Verificación en PostgreSQL — 5 productos creados
+
+Consulta ejecutada:
+
+```sql
+SELECT * FROM products;
+```
+
+![5 productos en PostgreSQL](assets/products-postgresql.png)
+
+Los 5 productos fueron creados mediante la API REST y persistidos correctamente en PostgreSQL. Se observa:
+- **ID auto-generado** por `@GeneratedValue` — no lo envía el cliente
+- **`created_at`** registrado automáticamente por `@PrePersist`
+- **`deleted = f`** (false) — ningún producto eliminado físicamente
+- **`updated_at`** vacío hasta que se realice una actualización
+
+---
+
+## 15. Comparación: memoria vs PostgreSQL
+
+| Aspecto | Lista en memoria | PostgreSQL + JPA |
 |---|---|---|
-| Controlador | `@RestController` | `@Controller()` |
-| Ruta base | `@RequestMapping("/ruta")` | `@Controller('ruta')` |
-| Método GET | `@GetMapping` | `@Get()` |
-| Servicio | `@Service` | `@Injectable()` |
-| Módulo | `@SpringBootApplication` | `@Module()` |
-| Puerto por defecto | 8080 | 3000 |
-| Servidor embebido | Tomcat | Express |
-
-La principal diferencia es el lenguaje y el sistema de módulos: NestJS organiza explícitamente módulos, controladores y servicios por dominio, mientras que Spring Boot usa el escaneo automático de componentes a partir del paquete raíz.
+| Persistencia | Se pierde al reiniciar | Permanente |
+| ID | Manual (`currentId++`) | Auto-generado (`@GeneratedValue`) |
+| Escalabilidad | Limitada a RAM | Ilimitada |
+| Auditoría | No | Sí (`createdAt`, `updatedAt`) |
+| Eliminación | Física | Lógica (`deleted = true`) |
+| Búsquedas | Manual con stream | Automática con JPA |
 
 ---
 
-# 7. Conclusión
+## 16. Conclusión
 
-Spring Boot permite crear APIs REST de forma rápida gracias a su configuración automática y servidor Tomcat embebido. Las anotaciones como `@RestController`, `@GetMapping` y `@RequestMapping` definen el comportamiento de cada componente de manera clara y expresiva, de forma similar a los decoradores de NestJS. La arquitectura por dominios (separando controladores y modelos en carpetas propias) facilita la mantenibilidad y escalabilidad del proyecto.
+Spring Boot con JPA y PostgreSQL permite construir una API REST con persistencia real de forma organizada. La arquitectura en capas (Controller → Service → Repository → Entity) separa claramente las responsabilidades. `BaseEntity` centraliza los campos de auditoría compartidos. El uso de Mappers evita exponer la estructura interna de la base de datos al cliente. La eliminación lógica preserva el historial de datos sin eliminar registros físicamente.
