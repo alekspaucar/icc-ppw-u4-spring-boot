@@ -92,7 +92,7 @@ public class CategoryServiceImpl implements CategoryService {
 
 
     /// Este método es privado porque solo se utiliza dentro de esta clase
-    //  para convertir una entidad de categoría en un DTO de respuesta. 
+    //  para convertir una entidad de categoría en un DTO de respuesta.
     //  Puede estar en una clase Mapper
     private CategoryResponseDto toResponse(CategoryEntity entity) {
         CategoryResponseDto dto = new CategoryResponseDto();
