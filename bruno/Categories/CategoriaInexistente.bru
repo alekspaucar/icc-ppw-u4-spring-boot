@@ -1,0 +1,21 @@
+meta {
+  name: CategoriaInexistente
+  type: http
+  seq: 3
+}
+
+post {
+  url: http://localhost:8080/api/products
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Monitor 4K",
+    "price": 500.0,
+    "stock": 5,
+    "userId": 1,
+    "categoryId": 999
+  }
+}

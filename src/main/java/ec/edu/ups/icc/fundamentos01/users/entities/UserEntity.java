@@ -1,7 +1,9 @@
 package ec.edu.ups.icc.fundamentos01.users.entities;
 
 import ec.edu.ups.icc.fundamentos01.core.entities.BaseEntity;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "users")

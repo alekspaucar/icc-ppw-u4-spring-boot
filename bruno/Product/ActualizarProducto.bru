@@ -1,0 +1,23 @@
+meta {
+  name: ActualizarProducto
+  type: http
+  seq: 4
+}
+
+put {
+  url: http://localhost:8080/api/products/:id
+  body: json
+  auth: none
+}
+
+params:path {
+  id: 1
+}
+
+body:json {
+  {
+    "name": "Notebook",
+    "price": 1200.0,
+    "stock": 10
+  }
+}

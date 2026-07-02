@@ -1,9 +1,11 @@
 package ec.edu.ups.icc.fundamentos01.products.mappers;
 
+import ec.edu.ups.icc.fundamentos01.categories.mappers.CategoryMapper;
 import ec.edu.ups.icc.fundamentos01.products.dtos.CreateProductDto;
 import ec.edu.ups.icc.fundamentos01.products.dtos.ProductResponseDto;
 import ec.edu.ups.icc.fundamentos01.products.entities.ProductEntity;
 import ec.edu.ups.icc.fundamentos01.products.models.ProductModel;
+import ec.edu.ups.icc.fundamentos01.users.mappers.UserMapper;
 
 public class ProductMapper {
 
@@ -42,6 +44,15 @@ public class ProductMapper {
         response.setPrice(model.getPrice());
         response.setStock(model.getStock());
         response.setCreatedAt(model.getCreatedAt());
+        response.setUpdatedAt(model.getUpdatedAt());
+        return response;
+    }
+
+
+    public static ProductResponseDto toResponse(ProductEntity entity) {
+        ProductResponseDto response = toResponse(toModelFromEntity(entity));
+        response.setOwner(UserMapper.toResponse(UserMapper.toModelFromEntity(entity.getOwner())));
+        response.setCategory(CategoryMapper.toResponse(entity.getCategory()));
         return response;
     }
 }

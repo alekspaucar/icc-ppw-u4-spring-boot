@@ -1,0 +1,15 @@
+meta {
+  name: ListarProductoId
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://localhost:8080api/products/:id
+  body: none
+  auth: none
+}
+
+params:path {
+  id: 1
+}

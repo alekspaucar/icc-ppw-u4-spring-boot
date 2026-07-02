@@ -1,0 +1,22 @@
+meta {
+  name: ActualizarUsuario
+  type: http
+  seq: 4
+}
+
+put {
+  url: http://localhost:8080/api/users/:id
+  body: json
+  auth: none
+}
+
+params:path {
+  id: 4
+}
+
+body:json {
+  {
+    "name": "Marco Farfan",
+    "email": "marco@gmail.com"
+  }
+}

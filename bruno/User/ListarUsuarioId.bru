@@ -1,0 +1,15 @@
+meta {
+  name: ListarUsuarioId
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://localhost:8080/api/users/:id
+  body: none
+  auth: none
+}
+
+params:path {
+  id: 10
+}
