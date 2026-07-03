@@ -25,7 +25,6 @@ public class ProductController {
     @GetMapping public List<ProductResponseDto> findAll() { return service.findAll(); }
     @GetMapping("/{id}") public ProductResponseDto findOne(@PathVariable Long id) { return service.findOne(id); }
     @GetMapping("/user/{userId}") public List<ProductResponseDto> findByUserId(@PathVariable Long userId) { return service.findByUserId(userId); }
-    @GetMapping("/category/{categoryId}") public List<ProductResponseDto> findByCategoryId(@PathVariable Long categoryId) { return service.findByCategoryId(categoryId); }
     @PostMapping public ProductResponseDto create(@Valid @RequestBody CreateProductDto dto) { return service.create(dto); }
     @PutMapping("/{id}") public ProductResponseDto update(@PathVariable Long id, @Valid @RequestBody UpdateProductDto dto) { return service.update(id, dto); }
     @PatchMapping("/{id}") public ProductResponseDto partialUpdate(@PathVariable Long id, @Valid @RequestBody PartialUpdateProductDto dto) { return service.partialUpdate(id, dto); }

@@ -1,6 +1,7 @@
 package ec.edu.ups.icc.fundamentos01.users.mappers;
 
 import java.time.LocalDateTime;
+
 import ec.edu.ups.icc.fundamentos01.users.dtos.CreateUserDto;
 import ec.edu.ups.icc.fundamentos01.users.dtos.UserResponseDto;
 import ec.edu.ups.icc.fundamentos01.users.entities.UserEntity;
@@ -40,8 +41,8 @@ public class UserMapper {
 
     public static UserResponseDto toResponse(UserModel model) {
         UserResponseDto response = new UserResponseDto();
-        response.setId(model.getId());
         response.setName(model.getName());
+        response.setId(model.getId());
         response.setEmail(model.getEmail());
         return response;
     }

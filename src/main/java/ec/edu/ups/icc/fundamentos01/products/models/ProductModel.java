@@ -1,9 +1,10 @@
 package ec.edu.ups.icc.fundamentos01.products.models;
 
+import ec.edu.ups.icc.fundamentos01.categories.entities.CategoryEntity;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class ProductModel {
-
     private Long id;
     private String name;
     private Double price;
@@ -11,9 +12,9 @@ public class ProductModel {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private boolean deleted;
+    private List<CategoryEntity> categories;
 
     public ProductModel() {}
-
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getName() { return name; }
@@ -28,4 +29,6 @@ public class ProductModel {
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
     public boolean isDeleted() { return deleted; }
     public void setDeleted(boolean deleted) { this.deleted = deleted; }
+    public List<CategoryEntity> getCategories() { return categories; }
+    public void setCategories(List<CategoryEntity> categories) { this.categories = categories; }
 }

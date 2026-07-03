@@ -5,11 +5,12 @@ meta {
 }
 
 get {
-  url: http://localhost:8080/api/products/user/:userId
+  url: http://localhost:8080/api/users/1/products?minPrice=500&maxPrice=1500
   body: none
   auth: none
 }
 
-params:path {
-  userId: 1
+params:query {
+  minPrice: 500
+  maxPrice: 1500
 }

@@ -6,6 +6,7 @@ import ec.edu.ups.icc.fundamentos01.products.dtos.ProductResponseDto;
 import ec.edu.ups.icc.fundamentos01.products.entities.ProductEntity;
 import ec.edu.ups.icc.fundamentos01.products.models.ProductModel;
 import ec.edu.ups.icc.fundamentos01.users.mappers.UserMapper;
+import java.util.ArrayList;
 
 public class ProductMapper {
 
@@ -26,6 +27,7 @@ public class ProductMapper {
         model.setCreatedAt(entity.getCreatedAt());
         model.setUpdatedAt(entity.getUpdatedAt());
         model.setDeleted(entity.isDeleted());
+        model.setCategories(new ArrayList<>(entity.getCategories()));
         return model;
     }
 
@@ -45,14 +47,26 @@ public class ProductMapper {
         response.setStock(model.getStock());
         response.setCreatedAt(model.getCreatedAt());
         response.setUpdatedAt(model.getUpdatedAt());
+        if (model.getCategories() != null) {
+            response.setCategories(model.getCategories().stream()
+                    .map(CategoryMapper::toResponse)
+                    .toList());
+        }
         return response;
     }
 
-
     public static ProductResponseDto toResponse(ProductEntity entity) {
-        ProductResponseDto response = toResponse(toModelFromEntity(entity));
+        ProductResponseDto response = new ProductResponseDto();
+        response.setId(entity.getId());
+        response.setName(entity.getName());
+        response.setPrice(entity.getPrice());
+        response.setStock(entity.getStock());
+        response.setCreatedAt(entity.getCreatedAt());
+        response.setUpdatedAt(entity.getUpdatedAt());
         response.setOwner(UserMapper.toResponse(UserMapper.toModelFromEntity(entity.getOwner())));
-        response.setCategory(CategoryMapper.toResponse(entity.getCategory()));
+        response.setCategories(entity.getCategories().stream()
+                .map(CategoryMapper::toResponse)
+                .toList());
         return response;
     }
 }

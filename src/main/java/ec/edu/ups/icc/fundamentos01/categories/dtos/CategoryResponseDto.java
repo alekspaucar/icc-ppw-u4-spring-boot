@@ -8,16 +8,14 @@ public class CategoryResponseDto {
 
     private String description;
     
-    // Constructor vacío
+
     public CategoryResponseDto() {}
-    // Constructor lleno
+
     public CategoryResponseDto(Long id, String name, String description) {
         this.id = id;
         this.name = name;
         this.description = description;
     }
-
-    // Getters y setters
 
     public String getDescription() {
         return description;

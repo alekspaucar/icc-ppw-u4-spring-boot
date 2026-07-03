@@ -24,7 +24,6 @@ public class UserServiceImpl implements UserService {
         this.userRepository = userRepository;
     }
 
-
     @Override
     public List<UserResponseDto> findAll() {
 
@@ -35,7 +34,6 @@ public class UserServiceImpl implements UserService {
                 .map(UserMapper::toResponse)
                 .toList();
     }
-
 
     @Override
     public UserResponseDto findOne(Long id) {
@@ -109,7 +107,7 @@ public class UserServiceImpl implements UserService {
         }
 
         if (dto.getPassword() != null) {
-            entity.setPasswordHash("HASH_"+dto.getPassword());
+            entity.setPasswordHash("HASH_" + dto.getPassword());
         }
 
         UserEntity savedEntity = userRepository.save(entity);
