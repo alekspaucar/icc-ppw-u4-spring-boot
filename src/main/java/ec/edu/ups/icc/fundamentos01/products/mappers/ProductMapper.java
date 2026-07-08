@@ -1,12 +1,13 @@
 package ec.edu.ups.icc.fundamentos01.products.mappers;
 
+import java.util.ArrayList;
+
 import ec.edu.ups.icc.fundamentos01.categories.mappers.CategoryMapper;
 import ec.edu.ups.icc.fundamentos01.products.dtos.CreateProductDto;
 import ec.edu.ups.icc.fundamentos01.products.dtos.ProductResponseDto;
 import ec.edu.ups.icc.fundamentos01.products.entities.ProductEntity;
 import ec.edu.ups.icc.fundamentos01.products.models.ProductModel;
 import ec.edu.ups.icc.fundamentos01.users.mappers.UserMapper;
-import java.util.ArrayList;
 
 public class ProductMapper {
 
