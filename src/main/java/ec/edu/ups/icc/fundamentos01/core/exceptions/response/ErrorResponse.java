@@ -3,8 +3,6 @@ package ec.edu.ups.icc.fundamentos01.core.exceptions.response;
 import java.time.LocalDateTime;
 import java.util.Map;
 
-import org.springframework.http.HttpStatus;
-
 public class ErrorResponse {
     private LocalDateTime timestamp;
 
@@ -18,21 +16,27 @@ public class ErrorResponse {
 
     private Map<String, String> details;
 
-    public ErrorResponse(HttpStatus status, String message, String path,
+    public ErrorResponse(LocalDateTime timestamp, int status, String error, String message, String path) {
+        this.timestamp = timestamp;
+        this.status = status;
+        this.error = error;
+        this.message = message;
+        this.path = path;
+    }
+
+    public ErrorResponse(LocalDateTime timestamp, int status, String error, String message, String path,
             Map<String, String> details) {
-        this.timestamp = LocalDateTime.now();
-        this.status = status.value();
-        this.error = status.getReasonPhrase();
+        this.timestamp = timestamp;
+        this.status = status;
+        this.error = error;
         this.message = message;
         this.path = path;
         this.details = details;
     }
 
-    public ErrorResponse(HttpStatus status, String message, String path) {
-        this(status, message, path, null);
+    public ErrorResponse(){
+        
     }
-
-
     public LocalDateTime getTimestamp() {
         return timestamp;
     }

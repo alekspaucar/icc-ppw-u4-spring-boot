@@ -22,22 +22,63 @@ public class CreateProductDto {
     @Min(value = 0, message = "El stock no puede ser negativo")
     private Integer stock;
 
-    @NotNull(message = "El usuario es obligatorio")
-    private Long userId;
-
     @NotEmpty(message = "Debe seleccionar al menos una categoria")
     private Set<Long> categoryIds;
 
-    public CreateProductDto() {}
-    public String getName() { return name; }
-    public void setName(String n) { this.name = n; }
-    public Double getPrice() { return price; }
-    public void setPrice(Double p) { this.price = p; }
-    public Integer getStock() { return stock; }
-    public void setStock(Integer s) { this.stock = s; }
-    public Long getUserId() { return userId; }
-    public void setUserId(Long u) { this.userId = u; }
-    public Set<Long> getCategoryIds() { return categoryIds; }
-    public void setCategoryIds(Set<Long> c) { this.categoryIds = c; }
+    @Size(max = 300, message = "La descripción no puede tener más de 300 caracteres")
+    private String description;
 
+    
+    private CreateProductDto(String name, Double price, Integer stock, Set<Long> categoryIds, String description) {
+        this.name = name;
+        this.price = price;
+        this.stock = stock;
+        this.categoryIds = categoryIds;
+        this.description = description;
+    }
+
+    
+
+    public CreateProductDto() {
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String n) {
+        this.name = n;
+    }
+
+    public Double getPrice() {
+        return price;
+    }
+
+    public void setPrice(Double p) {
+        this.price = p;
+    }
+
+    public Integer getStock() {
+        return stock;
+    }
+
+    public void setStock(Integer s) {
+        this.stock = s;
+    }
+
+    public Set<Long> getCategoryIds() {
+        return categoryIds;
+    }
+
+    public void setCategoryIds(Set<Long> c) {
+        this.categoryIds = c;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
 }

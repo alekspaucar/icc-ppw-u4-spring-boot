@@ -1,141 +1,185 @@
 package ec.edu.ups.icc.fundamentos01.core.exceptions.handler;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.naming.AuthenticationException;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authorization.AuthorizationDeniedException;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.BindException;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import ec.edu.ups.icc.fundamentos01.core.exceptions.base.AplicationException;
 import ec.edu.ups.icc.fundamentos01.core.exceptions.response.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 
-@ControllerAdvice
+@RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(AplicationException.class)
-    public ResponseEntity<ErrorResponse> handleApplicationException(
-            AplicationException ex,
-            HttpServletRequest request) {
+        @ExceptionHandler(AplicationException.class)
+        public ResponseEntity<ErrorResponse> handleApplicationException(
+                        AplicationException exception,
+                        HttpServletRequest request) {
+                HttpStatus status = exception.getStatus();
 
-        ErrorResponse response = new ErrorResponse(
-                ex.getStatus(),
-                ex.getMessage(),
-                request.getRequestURI());
+                ErrorResponse response = new ErrorResponse(
+                                LocalDateTime.now(),
+                                status.value(),
+                                status.getReasonPhrase(),
+                                exception.getMessage(),
+                                request.getRequestURI());
 
-        return ResponseEntity.status(ex.getStatus()).body(response);
-    }
+                return ResponseEntity.status(status).body(response);
+        }
 
-    @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<ErrorResponse> handleBadCredentialsException(
-            BadCredentialsException ex,
-            HttpServletRequest request) {
+        @ExceptionHandler(MethodArgumentNotValidException.class)
+        public ResponseEntity<ErrorResponse> handleValidationException(
+                        MethodArgumentNotValidException exception,
+                        HttpServletRequest request) {
+                Map<String, String> details = new HashMap<>();
 
-        ErrorResponse response = new ErrorResponse(
-                HttpStatus.UNAUTHORIZED,
-                "Credenciales invalidas",
-                request.getRequestURI());
+                for (FieldError error : exception.getBindingResult().getFieldErrors()) {
+                        details.put(error.getField(), error.getDefaultMessage());
+                }
 
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
-    }
+                ErrorResponse response = new ErrorResponse(
+                                LocalDateTime.now(),
+                                HttpStatus.BAD_REQUEST.value(),
+                                HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                                "Datos de entrada inválidos",
+                                request.getRequestURI(),
+                                details);
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleValidationException(
-            MethodArgumentNotValidException ex,
-            HttpServletRequest request) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
 
-        Map<String, String> errors = new HashMap<>();
+        @ExceptionHandler(Exception.class)
+        public ResponseEntity<ErrorResponse> handleGeneralException(
+                        Exception exception,
+                        HttpServletRequest request) {
+                ErrorResponse response = new ErrorResponse(
+                                LocalDateTime.now(),
+                                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                                HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
+                                "Error interno del servidor",
+                                request.getRequestURI());
 
-        ex.getBindingResult()
-                .getFieldErrors()
-                .forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
 
-        ErrorResponse response = new ErrorResponse(
-                HttpStatus.BAD_REQUEST,
-                "Datos de entrada invalidos",
-                request.getRequestURI(),
-                errors);
+        @ExceptionHandler(BindException.class)
+        public ResponseEntity<ErrorResponse> handleBindException(
+                        BindException exception,
+                        HttpServletRequest request) {
+                Map<String, String> details = new HashMap<>();
 
-        return ResponseEntity.badRequest().body(response);
-    }
+                for (FieldError error : exception.getBindingResult().getFieldErrors()) {
+                        details.put(error.getField(), error.getDefaultMessage());
+                }
 
-    @ExceptionHandler(BindException.class)
-    public ResponseEntity<ErrorResponse> handleBindException(
-            BindException ex,
-            HttpServletRequest request) {
+                ErrorResponse response = new ErrorResponse(
+                                LocalDateTime.now(),
+                                HttpStatus.BAD_REQUEST.value(),
+                                HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                                "Parámetros de consulta inválidos",
+                                request.getRequestURI(),
+                                details);
 
-        Map<String, String> errors = new HashMap<>();
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
 
-        ex.getBindingResult()
-                .getFieldErrors()
-                .forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
+        /*
+         * Maneja AuthorizationDeniedException.
+         *
+         * Esta excepción aparece cuando @PreAuthorize evalúa a false.
+         *
+         * Ejemplo:
+         * Un usuario con ROLE_USER intenta acceder a:
+         *
+         * GET /api/products
+         *
+         * pero el endpoint requiere:
+         *
+         * @PreAuthorize("hasRole('ADMIN')")
+         *
+         * Resultado esperado:
+         * 403 Forbidden
+         */
+        @ExceptionHandler(AuthorizationDeniedException.class)
+        public ResponseEntity<ErrorResponse> handleAuthorizationDeniedException(
+                        AuthorizationDeniedException exception,
+                        HttpServletRequest request) {
+                ErrorResponse response = new ErrorResponse(
+                                LocalDateTime.now(),
+                                HttpStatus.FORBIDDEN.value(),
+                                HttpStatus.FORBIDDEN.getReasonPhrase(),
+                                "No tienes permisos para acceder a este recurso",
+                                request.getRequestURI());
 
-        ErrorResponse response = new ErrorResponse(
-                HttpStatus.BAD_REQUEST,
-                "Parametros de consulta invalidos",
-                request.getRequestURI(),
-                errors);
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+        }
 
-        return ResponseEntity.badRequest().body(response);
-    }
+        /*
+         * Maneja errores de acceso denegado.
+         *
+         * Se usa cuando:
+         * - Un usuario intenta modificar un producto ajeno.
+         * - Un usuario autenticado no tiene autorización contextual.
+         *
+         * El mensaje específico enviado desde el servicio
+         * se conserva en la respuesta.
+         */
+        @ExceptionHandler(AccessDeniedException.class)
+        public ResponseEntity<ErrorResponse> handleAccessDeniedException(
+                        AccessDeniedException exception,
+                        HttpServletRequest request) {
+                String message = exception.getMessage();
 
-    @ExceptionHandler(AuthorizationDeniedException.class)
-    public ResponseEntity<ErrorResponse> handleAuthorizationDeniedException(
-            AuthorizationDeniedException ex,
-            HttpServletRequest request) {
+                if (message == null || message.isBlank()) {
+                        message = "Acceso denegado";
+                }
 
-        ErrorResponse response = new ErrorResponse(
-                HttpStatus.FORBIDDEN,
-                "No tienes permisos para acceder a este recurso",
-                request.getRequestURI());
+                ErrorResponse response = new ErrorResponse(
+                                LocalDateTime.now(),
+                                HttpStatus.FORBIDDEN.value(),
+                                HttpStatus.FORBIDDEN.getReasonPhrase(),
+                                message,
+                                request.getRequestURI());
 
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
-    }
+                return ResponseEntity
+                                .status(HttpStatus.FORBIDDEN)
+                                .body(response);
+        }
 
-    @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<ErrorResponse> handleAccessDeniedException(
-            AccessDeniedException ex,
-            HttpServletRequest request) {
+        /*
+         * Maneja AuthenticationException.
+         *
+         * Esta excepción aparece cuando hay problemas de autenticación:
+         * - credenciales incorrectas
+         * - usuario no autenticado
+         * - token inválido
+         *
+         * En la mayoría de casos JWT ya responde desde JwtAuthenticationEntryPoint,
+         * pero este manejador sirve como respaldo.
+         */
+        @ExceptionHandler(AuthenticationException.class)
+        public ResponseEntity<ErrorResponse> handleAuthenticationException(
+                        AuthenticationException exception,
+                        HttpServletRequest request) {
+                ErrorResponse response = new ErrorResponse(
+                                LocalDateTime.now(),
+                                HttpStatus.UNAUTHORIZED.value(),
+                                HttpStatus.UNAUTHORIZED.getReasonPhrase(),
+                                "Credenciales inválidas o sesión expirada",
+                                request.getRequestURI());
 
-        ErrorResponse response = new ErrorResponse(
-                HttpStatus.FORBIDDEN,
-                "Acceso denegado. No tienes los permisos necesarios",
-                request.getRequestURI());
-
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
-    }
-
-    @ExceptionHandler(AuthenticationException.class)
-    public ResponseEntity<ErrorResponse> handleAuthenticationException(
-            AuthenticationException ex,
-            HttpServletRequest request) {
-
-        ErrorResponse response = new ErrorResponse(
-                HttpStatus.UNAUTHORIZED,
-                "Credenciales inválidas o sesión expirada",
-                request.getRequestURI());
-
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
-    }
-
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleUnexpectedException(
-            Exception ex,
-            HttpServletRequest request) {
-
-        ErrorResponse response = new ErrorResponse(
-                HttpStatus.INTERNAL_SERVER_ERROR,
-                "Error interno del servidor",
-                request.getRequestURI());
-
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-    }
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        }
 }

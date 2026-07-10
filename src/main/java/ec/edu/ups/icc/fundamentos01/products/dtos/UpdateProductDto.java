@@ -1,7 +1,13 @@
 package ec.edu.ups.icc.fundamentos01.products.dtos;
 
-import jakarta.validation.constraints.*;
 import java.util.Set;
+
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 public class UpdateProductDto {
     @NotBlank(message = "El nombre es obligatorio")
@@ -19,13 +25,52 @@ public class UpdateProductDto {
     @NotEmpty(message = "Debe seleccionar al menos una categoria")
     private Set<Long> categoryIds;
 
-    public UpdateProductDto() {}
-    public String getName() { return name; }
-    public void setName(String n) { this.name = n; }
-    public Double getPrice() { return price; }
-    public void setPrice(Double p) { this.price = p; }
-    public Integer getStock() { return stock; }
-    public void setStock(Integer s) { this.stock = s; }
-    public Set<Long> getCategoryIds() { return categoryIds; }
-    public void setCategoryIds(Set<Long> c) { this.categoryIds = c; }
+    @Size(max = 250, message = "La descripción no puede tener más de 250 caracteres")
+    private String description;
+    
+    public UpdateProductDto() {
+    }
+
+    public UpdateProductDto(String name, Double price, Integer stock, Set<Long> categoryIds, String description) {
+        this.name = name;
+        this.price = price;
+        this.stock = stock;
+        this.categoryIds = categoryIds;
+        this.description = description; 
+    }
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String n) {
+        this.name = n;
+    }
+
+    public Double getPrice() {
+        return price;
+    }
+
+    public void setPrice(Double p) {
+        this.price = p;
+    }
+
+    public Integer getStock() {
+        return stock;
+    }
+
+    public void setStock(Integer s) {
+        this.stock = s;
+    }
+
+    public Set<Long> getCategoryIds() {
+        return categoryIds;
+    }
+
+    public void setCategoryIds(Set<Long> c) {
+        this.categoryIds = c;
+    }
+
+    public String getDescription() {
+        return description;
+    }
 }
