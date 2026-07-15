@@ -1,39 +1,30 @@
-server:
-  port: 8080
-  servlet:
-    context-path: /api
-
 spring:
   application:
     name: fundamentos01
-  datasource:
-    url: jdbc:postgresql://localhost:5432/devdb
-    username: ups
-    password: ups123
+  profiles:
+    active: dev
   jpa:
-    hibernate:
-      ddl-auto: update
     properties:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
-# ============== CONFIGURACIÓN DE JWT ==============
+server:
+  servlet:
+    context-path: /api
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+
 jwt:
-    # Secret key para firmar tokens (EN PRODUCCIÓN USAR VARIABLE DE ENTORNO)
-    secret: ${JWT_SECRET:mySecretKeyForJWT2024MustBeAtLeast256BitsLongForHS256Algorithm}
-    
-    # Tiempo de expiración del access token (30 minutos)
-    expiration: 1800000  # 30 minutos en milisegundos
-    
-    # Tiempo de expiración del refresh token (7 días)
-    refresh-expiration: 604800000  # 7 días en milisegundos
-    
-    # Issuer del token
-    issuer: fundamentos01-api
-    
-    # Header donde se envía el token
-    header: Authorization
-    
-    # Prefijo del token
-    prefix: "Bearer "
+  expiration: 1800000
+  refresh-expiration: 604800000
+  issuer: fundamentos01-api
+  header: Authorization
+  prefix: "Bearer "

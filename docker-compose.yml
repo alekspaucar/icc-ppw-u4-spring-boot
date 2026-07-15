@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  # ============================================
+  # POSTGRESQL
+  # ============================================
+  postgres:
+    image: postgres:15-alpine
+    container_name: fundamentos01-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: fundamentos01_db
+      POSTGRES_USER: fundamentos01_user
+      POSTGRES_PASSWORD: fundamentos01_pass
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fundamentos01_user -d fundamentos01_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ============================================
+  # SPRING BOOT API
+  # ============================================
+  api:
+    build: .
+    container_name: fundamentos01-api
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DATABASE_URL: jdbc:postgresql://postgres:5432/fundamentos01_db
+      DB_USERNAME: fundamentos01_user
+      DB_PASSWORD: fundamentos01_pass
+      JWT_SECRET: mySecretKeyForJWT2024MustBeAtLeast256BitsLongForHS256Algorithm
+      JWT_EXPIRATION: 1800000
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+# ============================================
+# VOLUMES
+# ============================================
+volumes:
+  postgres_data:
+    driver: local
