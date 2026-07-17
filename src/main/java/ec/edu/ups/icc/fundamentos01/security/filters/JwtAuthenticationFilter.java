@@ -1,9 +1,7 @@
 package ec.edu.ups.icc.fundamentos01.security.filters;
 
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -17,13 +15,19 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import ec.edu.ups.icc.fundamentos01.security.config.JwtProperties;
 import ec.edu.ups.icc.fundamentos01.security.services.UserDetailsServiceImpl;
 import ec.edu.ups.icc.fundamentos01.security.utils.JwtUtil;
-
-import java.io.IOException;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
+
+    public static Logger getLogger() {
+        return logger;
+    }
 
     private final JwtUtil jwtUtil;
     private final UserDetailsServiceImpl userDetailsService;
@@ -44,7 +48,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             String jwt = getJwtFromRequest(request);
 
-            if (StringUtils.hasText(jwt) && jwtUtil.validateToken(jwt)) {
+            if (StringUtils.hasText(jwt) && jwtUtil.validateAccessToken(jwt)) {
 
                 String email = jwtUtil.getEmailFromToken(jwt);
 
@@ -79,4 +83,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         return null;
     }
+
+    
 }

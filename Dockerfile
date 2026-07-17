@@ -1,52 +1,57 @@
-# ============================================
-# ETAPA 1: BUILD
-# ============================================
-FROM eclipse-temurin:25-jdk-jammy AS builder
+FROM eclipse-temurin:21-jdk-alpine AS builder
 
-WORKDIR /build
+WORKDIR /workspace/app
 
-# Copiar archivos Gradle primero (aprovecha cache de Docker)
-COPY gradlew .
+COPY gradlew ./
 COPY gradle ./gradle
 COPY build.gradle settings.gradle ./
 
-# Descargar dependencias (cacheado si build.gradle no cambia)
-RUN ./gradlew dependencies --no-daemon
+RUN chmod +x gradlew
 
-# Copiar codigo fuente
 COPY src ./src
 
-# Compilar JAR (omitir tests)
-RUN ./gradlew build -x test --no-daemon
+RUN --mount=type=cache,target=/root/.gradle \
+    ./gradlew bootJar -x test --no-daemon
 
-# ============================================
-# ETAPA 2: RUNTIME
-# ============================================
-FROM eclipse-temurin:25-jdk-jammy
+RUN mkdir -p build/dependency \
+    && cd build/dependency \
+    && jar -xf ../libs/fundamentos01.jar
 
-# Crear usuario no-root
-RUN groupadd -r spring && useradd -r -g spring spring
+FROM eclipse-temurin:21-jre-alpine AS runtime
 
 WORKDIR /app
 
-# Copiar solo el JAR desde la etapa de build
-COPY --from=builder /build/build/libs/fundamentos01.jar app.jar
+RUN apk add --no-cache curl \
+    && addgroup -S spring \
+    && adduser -S spring -G spring
 
-RUN chown spring:spring app.jar
+ARG DEPENDENCY=/workspace/app/build/dependency
+
+COPY --from=builder --chown=spring:spring \
+    ${DEPENDENCY}/BOOT-INF/lib /app/lib
+
+COPY --from=builder --chown=spring:spring \
+    ${DEPENDENCY}/META-INF /app/META-INF
+
+COPY --from=builder --chown=spring:spring \
+    ${DEPENDENCY}/BOOT-INF/classes /app
 
 USER spring:spring
 
 EXPOSE 8080
 
-# Health check (context-path = /api)
-HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:8080/api/actuator/health || exit 1
+ENV TZ=America/Guayaquil
 
-ENV SPRING_PROFILES_ACTIVE=prod
+HEALTHCHECK --interval=30s \
+    --timeout=5s \
+    --start-period=60s \
+    --retries=3 \
+    CMD curl --fail --silent --show-error \
+    http://localhost:8080/api/actuator/health || exit 1
 
 ENTRYPOINT ["java", \
-    "-Djava.security.egd=file:/dev/./urandom", \
     "-Xms256m", \
     "-Xmx512m", \
-    "-jar", \
-    "app.jar"]
+    "-cp", \
+    "/app:/app/lib/*", \
+    "ec.edu.ups.icc.fundamentos01.Fundamentos01Application"]
