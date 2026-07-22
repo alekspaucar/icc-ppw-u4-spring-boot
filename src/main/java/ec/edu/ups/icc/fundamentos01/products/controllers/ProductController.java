@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Slice;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -47,6 +48,7 @@ public class ProductController {
     @ApiResponse(responseCode = "200", description = "Lista obtenida exitosamente")
     @ApiResponse(responseCode = "401", description = "No autenticado")
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public List<ProductResponseDto> findAll() { return service.findAll(); }
 
     @Operation(summary = "Obtener producto por ID", description = "Devuelve un producto según su identificador.")
